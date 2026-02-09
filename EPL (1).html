@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+
+<title>Ekatmata Premier League – Season 5</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+
+<style>
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Poppins',sans-serif;
+}
+
+body{
+  background:linear-gradient(135deg,#f6f9fc,#e9f5f2);
+}
+
+/* HEADER */
+.header{
+  background:white;
+  padding:12px 30px;
+  display:flex;
+  align-items:center;
+  box-shadow:0 4px 15px rgba(0,0,0,0.08);
+}
+
+.logoBox{
+  display:flex;
+  align-items:center;
+  gap:15px;
+}
+
+.logoImg{
+  height:95px;
+}
+
+.brand h2{
+  font-size:20px;
+  color:#0f766e;
+}
+
+/* HERO */
+.hero{
+  background:linear-gradient(135deg,#0ea5a4,#22c55e);
+  color:white;
+  text-align:center;
+  padding:40px 15px;
+}
+
+/* SECTION */
+.section{
+  max-width:1100px;
+  margin:auto;
+  padding:30px 20px;
+}
+
+.card{
+  background:white;
+  padding:22px;
+  border-radius:12px;
+  margin-bottom:20px;
+  box-shadow:0 6px 14px rgba(0,0,0,0.07);
+}
+
+/* GRID */
+.infoGrid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:10px;
+}
+
+.infoItem{
+  background:#f1f5f9;
+  padding:10px;
+  border-radius:8px;
+}
+
+/* FORM */
+form{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+}
+
+input, select{
+  flex:1;
+  padding:10px;
+  border:1px solid #ccc;
+  border-radius:6px;
+}
+
+button{
+  padding:10px 14px;
+  border:none;
+  border-radius:6px;
+  color:white;
+  cursor:pointer;
+}
+
+.addBtn{background:#22c55e;}
+.clearBtn{background:#ef4444;}
+.exportBtn{background:#3b82f6;}
+.deleteBtn{background:#ef4444;padding:4px 8px;}
+
+/* TABLE */
+table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:10px;
+}
+
+th,td{
+  padding:8px;
+  border-bottom:1px solid #ddd;
+  text-align:center;
+}
+
+th{
+  background:#f1f5f9;
+}
+
+footer{
+  text-align:center;
+  padding:15px;
+  font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="logoBox">
+    <img src="./final%205.jpg" class="logoImg">
+    <div class="brand">
+      <h2>Ekatmata Premier League – Season 5</h2>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="hero">
+  <h1>🏏 Player Auction Registration</h1>
+</div>
+
+<section class="section">
+
+<!-- INFO -->
+<div class="card">
+  <div class="infoGrid">
+    <div class="infoItem"><b>Date:</b> 5 April 2026</div>
+    <div class="infoItem"><b>Time:</b> 4:00 PM – 10:00 PM</div>
+    <div class="infoItem"><b>Venue:</b> Dreamfields Turf</div>
+    <div class="infoItem"><b>Entry Fee:</b> ₹300</div>
+  </div>
+</div>
+
+<!-- REGISTRATION -->
+<div class="card">
+  <h3>Register Player</h3>
+
+  <form id="regForm">
+    <input id="playerName" type="text" placeholder="Player Name" required>
+    <input id="playerPhone" type="tel" placeholder="Phone Number" required>
+
+    <!-- JERSEY SIZE (UPDATED WITH XXXL) -->
+    <select id="playerSize" required>
+      <option value="">Jersey Size</option>
+      <option>S</option>
+      <option>M</option>
+      <option>L</option>
+      <option>XL</option>
+      <option>XXL</option>
+      <option>XXXL</option>
+    </select>
+
+    <button type="submit" class="addBtn">Add</button>
+    <button type="button" onclick="clearAll()" class="clearBtn">Clear</button>
+    <button type="button" onclick="exportExcel()" class="exportBtn">Excel</button>
+  </form>
+</div>
+
+<!-- TABLE -->
+<div class="card">
+  <h3>Registered Players</h3>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Phone</th>
+        <th>Size</th>
+        <th>Action</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+</section>
+
+<footer>© 2026 EPL</footer>
+
+<script>
+const form=document.getElementById("regForm");
+const tableBody=document.getElementById("tableBody");
+
+let players=JSON.parse(localStorage.getItem("players"))||[];
+
+/* Render Table */
+function renderTable(){
+  tableBody.innerHTML="";
+  players.forEach((p,i)=>{
+    tableBody.innerHTML+=`
+      <tr>
+        <td>${i+1}</td>
+        <td>${p.name}</td>
+        <td>${p.phone}</td>
+        <td>${p.size}</td>
+        <td><button class="deleteBtn" onclick="deletePlayer(${i})">Delete</button></td>
+      </tr>`;
+  });
+}
+renderTable();
+
+/* Add Player */
+form.addEventListener("submit",(e)=>{
+  e.preventDefault();
+
+  const name=document.getElementById("playerName").value.trim();
+  const phone=document.getElementById("playerPhone").value.trim();
+  const size=document.getElementById("playerSize").value;
+
+  if(!name||!phone||!size) return;
+
+  players.push({name,phone,size});
+
+  localStorage.setItem("players",JSON.stringify(players));
+  form.reset();
+  renderTable();
+});
+
+/* Delete */
+function deletePlayer(i){
+  players.splice(i,1);
+  localStorage.setItem("players",JSON.stringify(players));
+  renderTable();
+}
+
+/* Clear All */
+function clearAll(){
+  players=[];
+  localStorage.removeItem("players");
+  renderTable();
+}
+
+/* Export Excel */
+function exportExcel(){
+  const data=players.map((p,i)=>({
+    ID:i+1,
+    Name:p.name,
+    Phone:p.phone,
+    Size:p.size
+  }));
+
+  const ws=XLSX.utils.json_to_sheet(data);
+  const wb=XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb,ws,"Players");
+  XLSX.writeFile(wb,"EPL_Player_List.xlsx");
+}
+</script>
+
+</body>
+</html>
